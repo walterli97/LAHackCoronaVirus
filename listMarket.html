@@ -1,0 +1,91 @@
+<!DOCTYPE html >
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>Using MySQL and PHP with Google Maps</title>
+    <style>
+      #map {
+        height: 100%;
+      }
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+
+<html>
+  <body>
+    <input id="pac-input" type="text" placeholder="Search Box">
+    <div id="map"></div>
+
+    <script>
+      function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 34.0522, lng: -118.2437},
+          zoom: 15,
+          mapTypeId: 'roadmap'
+        });
+       
+        var infoWindow = new google.maps.InfoWindow;
+
+        // Change this depending on the name of your PHP or XML file
+        downloadUrl('https://data.lacity.org/api/views/g986-7yf9/rows.xml?accessType=DOWNLOAD', function(data) {
+            var xml = data.responseXML;
+            var rows = xml.getElementsByTagName("row");
+            var count = 0;
+            Array.prototype.forEach.call(rows, function(row) {
+                if (row.children.length < 100 & count < 100) {
+                    if (row.getElementsByTagName("dba_name")[0] === undefined)
+                        var name = row.getElementsByTagName("business_name")[0].childNodes[0].data; 
+                    else
+                        var name = row.getElementsByTagName("dba_name")[0].childNodes[0].data; 
+                    var street = row.getElementsByTagName("street_address")[0].childNodes[0].data;
+                    if (row.getElementsByTagName("location_1")[0] !== undefined)
+                        var point = new google.maps.LatLng(parseFloat(row.getElementsByTagName("location_1")[0].getAttribute('latitude')), parseFloat(row.getElementsByTagName("location_1")[0].getAttribute('longitude')));
+                    
+                    var infowincontent = document.createElement('div');
+                    var strong = document.createElement('strong');
+                    strong.textContent = name
+                    infowincontent.appendChild(strong);
+                    infowincontent.appendChild(document.createElement('br'));
+                    var text = document.createElement('text');
+                    text.textContent = street;
+                    infowincontent.appendChild(text);
+                    var markers = new google.maps.Marker({
+                        map: map,
+                        position: point,
+                        label: 'M'
+                    });
+                    markers.addListener('click', function() {
+                        console.log(infowincontent);
+                        infoWindow.setContent(infowincontent);
+                        infoWindow.open(map, markers);
+                    });
+                    count++;
+                }   
+            });
+        });
+      }
+
+      function downloadUrl(url, callback) {
+        var request = window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : new XMLHttpRequest;
+        request.onreadystatechange = function() {
+          if (request.readyState == 4) {
+            request.onreadystatechange = doNothing;
+            callback(request, request.status);
+          }
+        };
+        request.open('GET', url, true);
+        request.send(null);
+      }
+
+      function doNothing() {}
+
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBeiLe_l1SjazmA39AIBp_hSJHdPQqkH7g&callback=initMap">
+    </script>
+  </body>
+</html>
