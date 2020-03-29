@@ -41,6 +41,30 @@
         line-height: 30px;
         padding-left: 10px;
       }
+
+        #data {
+            position: absolute;
+            top: 50%;
+            left: 0%;
+            z-index: 5;
+            background-color: #fff;
+            width: 300px;
+            height:200px;
+            border: 10px solid #B22222;
+            padding: 50px;
+            margin: 10px;
+
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+            display: block;
+            overflow: auto;
+         box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            display:none;
+        }
+
+        .show {display:block;}
     </style>
 
      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
@@ -67,10 +91,16 @@
   </head>
 
   <body>
+    <div id="data">
+    <h1>City: </h1>
+        <p>The number of people who is Coronavirus-19 tested positive in this area:</p>
+    </div>
+
     <div id="floating-panel1">
       <input id="address" type="textbox" value="Los Angeles, CA">
       <input id="submit" type="button" value="Enter">
     </div>
+
      <div id="floating-panel2">
       <input onclick="clearMarkers();" type=button value="Hide Markers">
       <input onclick="showMarkers();" type=button value="Show All Markers">
@@ -104,6 +134,7 @@
               position: results[0].geometry.location
             });
             markers.push(marker);
+
             var infowindow = new google.maps.InfoWindow({
               content: contentString
             });
@@ -165,6 +196,7 @@
           }
         });
       }
+
       //Import city boundries geojson data
       function cityboundries(){
            map.data.loadGeoJson(hred = "lacityboundry.geojson");
@@ -176,31 +208,35 @@
                 return /** @type {!google.maps.Data.StyleOptions} */({
                 fillColor: color,
                 strokeColor: color,
-                strokeWeight: 1.2
+                strokeWeight: 1.2,
+                    fillOpacity:0.3,
                   });
                 });
-
             // When the user clicks, set 'isColorful', changing the color of the letters.
-          map.data.addListener('click', function(event) {
-              event.feature.setProperty('isColorful', true);
+
+            map.data.addListener('click', function(event) {
+                map.data.overrideStyle(event.feature, {fillColor: '#3399FF',fillOpacity:0.3, strokeOpacity:0.7, strokeWeight: 3.5});
+                showdata();
             });
             // When the user hovers, tempt them to click by outlining the letters.
             // Call revertStyle() to remove all overrides. This will use the style rules
             // defined in the function passed to setStyle()
 
-          map.data.addListener('mouseover', function(event) {
-              map.data.revertStyle();
-              map.data.overrideStyle(event.feature, {strokeWeight: 3.5});
-            });
-
-            map.data.addListener('mouseout', function(event) {
-            map.data.revertStyle();
+            map.data.addListener('mousedown', function(event) {
+                map.data.revertStyle();
             });
 
       }
 
 
-
+      function showdata(){
+       var x = document.getElementById("data");
+  if (x.style.display === "block") {
+    x.style.display = "none";
+  } else {
+    x.style.display = "block";
+  }
+      }
 
 
     </script>
