@@ -67,18 +67,10 @@
         .show {display:block;}
     </style>
 
-     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
-   integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-   crossorigin=""/>
-     <!-- Make sure you put this AFTER Leaflet's CSS -->
-    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
-   integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
-   crossorigin=""></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   <script src="papaparse.min.js"></script>
+      <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-  <script src="papaparse.min.js"></script>
      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
    crossorigin=""/>
@@ -119,6 +111,7 @@
             '</div>';
       var map;
        var markers = [];
+        var infowindow = new google.maps.InfoWindow();
       function initMap() {
           map = new google.maps.Map(document.getElementById('map'), {zoom: 11});
         //Geocode to Los Angeles initially
@@ -135,7 +128,7 @@
             });
             markers.push(marker);
 
-            var infowindow = new google.maps.InfoWindow({
+             infowindow = new google.maps.InfoWindow({
               content: contentString
             });
             //Information window
@@ -199,8 +192,9 @@
 
       //Import city boundries geojson data
       function cityboundries(){
-           map.data.loadGeoJson(hred = "lacityboundry.geojson");
+           map.data.loadGeoJson('lacityboundry.geojson');
            map.data.setStyle(function(feature) {
+
             var color = 'gray';
             if (feature.getProperty('isColorful')) {
                 color = feature.getProperty('color');
@@ -216,8 +210,17 @@
 
             map.data.addListener('click', function(event) {
                 map.data.overrideStyle(event.feature, {fillColor: '#3399FF',fillOpacity:0.3, strokeOpacity:0.7, strokeWeight: 3.5});
-                showdata();
+                     showdata();
+                	var myHTML = event.feature.getProperty("description");
+	infowindow.setContent("<div style='width:150px;'>"+myHTML+"</div>");
+	// position the infowindow on the marker
+	infowindow.setPosition(event.feature.getGeometry().get());
+	// anchor the infowindow on the marker
+	infowindow.setOptions({pixelOffset: new google.maps.Size(0,-30)});
+	infowindow.open(map);
+
             });
+
             // When the user hovers, tempt them to click by outlining the letters.
             // Call revertStyle() to remove all overrides. This will use the style rules
             // defined in the function passed to setStyle()
@@ -225,6 +228,7 @@
             map.data.addListener('mousedown', function(event) {
                 map.data.revertStyle();
             });
+                 return {icon:feature.getProperty('icon')};
 
       }
 
