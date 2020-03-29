@@ -53,15 +53,15 @@
                     var text = document.createElement('text');
                     text.textContent = street;
                     infowincontent.appendChild(text);
-                    var markers = new google.maps.Marker({
+                    var markets = new google.maps.Marker({
                         map: map,
                         position: point,
                         label: 'M'
                     });
-                    markers.addListener('click', function() {
+                    markets.addListener('click', function() {
                         console.log(infowincontent);
                         infoWindow.setContent(infowincontent);
-                        infoWindow.open(map, markers);
+                        infoWindow.open(map, markets);
                     });
                     count++;
                 }   

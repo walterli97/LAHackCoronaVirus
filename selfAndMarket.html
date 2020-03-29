@@ -29,14 +29,53 @@
           zoom: 11,
           mapTypeId: 'roadmap'
         });
-
         // Create the search box and link it to the UI element.
         var input = document.getElementById('pac-input');
         var searchBox = new google.maps.places.SearchBox(input);
-
         // Bias the SearchBox results towards current map's viewport.
         map.addListener('bounds_changed', function() {
           searchBox.setBounds(map.getBounds());
+        });
+        
+
+        var infoWindow = new google.maps.InfoWindow;
+        var rows;
+        // Change this depending on the name of your PHP or XML file
+        downloadUrl('https://data.lacity.org/api/views/g986-7yf9/rows.xml?accessType=DOWNLOAD', function(data) {
+            var xml = data.responseXML;
+            rows = xml.getElementsByTagName("row");
+            var count = 0;
+            Array.prototype.forEach.call(rows, function(row) {
+                if (row.children.length < 100 & count < 400) {
+                    if (row.getElementsByTagName("dba_name")[0] === undefined)
+                        var name = row.getElementsByTagName("business_name")[0].childNodes[0].data; 
+                    else
+                        var name = row.getElementsByTagName("dba_name")[0].childNodes[0].data; 
+                    var street = row.getElementsByTagName("street_address")[0].childNodes[0].data;
+                    if (row.getElementsByTagName("location_1")[0] !== undefined)
+                        var point = new google.maps.LatLng(parseFloat(row.getElementsByTagName("location_1")[0].getAttribute('latitude')), parseFloat(row.getElementsByTagName("location_1")[0].getAttribute('longitude')));
+                    
+                    var infowincontent = document.createElement('div');
+                    var strong = document.createElement('strong');
+                    strong.textContent = name
+                    infowincontent.appendChild(strong);
+                    infowincontent.appendChild(document.createElement('br'));
+                    var text = document.createElement('text');
+                    text.textContent = street;
+                    infowincontent.appendChild(text);
+                    var markets = new google.maps.Marker({
+                        map: map,
+                        position: point,
+                        label: 'M'
+                    });
+                    markets.addListener('click', function() {
+                        console.log(infowincontent);
+                        infoWindow.setContent(infowincontent);
+                        infoWindow.open(map, markets);
+                    });
+                    count++;
+                }   
+            });
         });
 
         var markers = [];
@@ -44,17 +83,13 @@
         // more details for that place.
         searchBox.addListener('places_changed', function() {
           var places = searchBox.getPlaces();
-
-          if (places.length == 0) {
+          if (places.length == 0)
             return;
-          }
-
           // Clear out the old markers.
           markers.forEach(function(marker) {
             marker.setMap(null);
           });
           markers = [];
-
           // For each place, get the icon, name and location.
           var bounds = new google.maps.LatLngBounds();
           if (!places[0].geometry) {
@@ -68,7 +103,6 @@
             anchor: new google.maps.Point(17, 34),
             scaledSize: new google.maps.Size(25, 25)
           };
-
           // Create a marker for each place.
           markers.push(new google.maps.Marker({
             map: map,
@@ -76,7 +110,6 @@
             title: places[0].name,
             position: places[0].geometry.location
           }));
-
           if (places[0].geometry.viewport) {
             // Only geocodes have viewport.
             bounds.union(places[0].geometry.viewport);
@@ -84,14 +117,20 @@
             bounds.extend(places[0].geometry.location);
           }
           map.fitBounds(bounds);
-
-
+       
           /**
            * calculate travel distance
            */
-          var origin = places[0].geometry.location.toJSON()
+          var origin = places[0].geometry.location.toJSON() 
           var destinations = [{lat: 34.0451, lng: -118.3533}, {lat: 34.0621, lng: -118.271}, {lat: 34.0045, lng: -118.4302}]
-          
+          var destinations = []
+          count = 0;
+          Array.prototype.forEach.call(rows, function(row) {
+            if (row.getElementsByTagName("location_1")[0] !== undefined & count < 25) {
+                destinations.push({lat: parseFloat(row.getElementsByTagName("location_1")[0].getAttribute('latitude')), lng: parseFloat(row.getElementsByTagName("location_1")[0].getAttribute('longitude'))})
+                count++;
+            }
+          });
           var service = new google.maps.DistanceMatrixService;
           service.getDistanceMatrix({
             origins: [origin],
@@ -110,15 +149,40 @@
               outputDiv.innerHTML = '';
               for (var i = 0; i < originList.length; i++) {
                 var results = response.rows[i].elements;
+                var dis_sorted = []
+                for (var j=0; j<results.length; j++) {
+                    if (results[j].distance !== undefined)
+                        dis_sorted.push({value: results[j].distance.value, index: j});
+                }
+                dis_sorted.sort((a, b) => {
+                    return a.value - b.value;
+                });
                 for (var j = 0; j < results.length; j++) {
-                  outputDiv.innerHTML += originList[i]+' to '+destinationList[j]+': '+results[j].distance.text+' in '+results[j].duration.text+'<br>';
+                  console.log(results[j].distance)
+                  outputDiv.innerHTML += originList[i]+' to '+destinationList[j]+': '+ results[dis_sorted[j].index].distance.text+' in '+results[j].duration.text+'<br>';
                 }
               }
 
             }
           });
         });
+        
+        
       }
+
+      function downloadUrl(url, callback) {
+        var request = window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : new XMLHttpRequest;
+        request.onreadystatechange = function() {
+          if (request.readyState == 4) {
+            request.onreadystatechange = doNothing;
+            callback(request, request.status);
+          }
+        };
+        request.open('GET', url, true);
+        request.send(null);
+      }
+
+      function doNothing() {}
 
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBeiLe_l1SjazmA39AIBp_hSJHdPQqkH7g&libraries=places&callback=initAutocomplete"
