@@ -6,13 +6,13 @@ It also gives recommendations based on infection and distance.
 
 # To run the project:
 
-### first run a simple http server
+### first run a simple http server in the project folder
 
     python3 -m http.server
 
 ### then type the following address into your brower
 
-    localhost:8000/homepage.htm
+    localhost:8000/Homepage.htm
 
 ### enjoy ;)
  
