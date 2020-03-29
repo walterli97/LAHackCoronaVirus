@@ -64,7 +64,6 @@
             display:none;
         }
 
-        .show {display:block;}
     </style>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
@@ -111,7 +110,9 @@
             '</div>';
       var map;
        var markers = [];
-        var infowindow = new google.maps.InfoWindow();
+        var infoWindow = new google.maps.InfoWindow({
+		      content: ""
+		  	});
       function initMap() {
           map = new google.maps.Map(document.getElementById('map'), {zoom: 11});
         //Geocode to Los Angeles initially
@@ -192,9 +193,11 @@
 
       //Import city boundries geojson data
       function cityboundries(){
+          infoWindow = new google.maps.InfoWindow({
+		      content: ""
+		  	});
            map.data.loadGeoJson('lacityboundry.geojson');
            map.data.setStyle(function(feature) {
-
             var color = 'gray';
             if (feature.getProperty('isColorful')) {
                 color = feature.getProperty('color');
@@ -205,19 +208,19 @@
                 strokeWeight: 1.2,
                     fillOpacity:0.3,
                   });
+               return {icon:feature.getProperty('icon')};
                 });
             // When the user clicks, set 'isColorful', changing the color of the letters.
 
             map.data.addListener('click', function(event) {
                 map.data.overrideStyle(event.feature, {fillColor: '#3399FF',fillOpacity:0.3, strokeOpacity:0.7, strokeWeight: 3.5});
-                     showdata();
-                	var myHTML = event.feature.getProperty("description");
-	infowindow.setContent("<div style='width:150px;'>"+myHTML+"</div>");
-	// position the infowindow on the marker
-	infowindow.setPosition(event.feature.getGeometry().get());
-	// anchor the infowindow on the marker
-	infowindow.setOptions({pixelOffset: new google.maps.Size(0,-30)});
-	infowindow.open(map);
+
+            //show an infowindow on click
+				infoWindow.setContent('<div style="line-height:1.35;overflow:hidden;white-space:nowrap;"> City: '+
+											event.feature.getProperty("city_label")  +"<br/>Novel Coronavirus Cases: " + event.feature.getProperty("value") + "</div>");
+				var anchor = new google.maps.MVCObject();
+				anchor.set("position",event.latLng);
+				infoWindow.open(map,anchor);
 
             });
 
@@ -228,19 +231,12 @@
             map.data.addListener('mousedown', function(event) {
                 map.data.revertStyle();
             });
-                 return {icon:feature.getProperty('icon')};
+
 
       }
 
 
-      function showdata(){
-       var x = document.getElementById("data");
-  if (x.style.display === "block") {
-    x.style.display = "none";
-  } else {
-    x.style.display = "block";
-  }
-      }
+
 
 
     </script>
