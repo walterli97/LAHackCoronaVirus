@@ -120,11 +120,7 @@
           document.getElementById('submit').addEventListener('click', function() {
           geocodeAddress(geocoder, map);
         })
-           map.data.loadGeoJson(hred = "lacityboundry.geojson");
-            map.data.setStyle({
-            fillColor: 'red'
-        });
-        
+          cityboundries();
       }
 
 
@@ -168,9 +164,40 @@
             alert('Geocode was not successful for the following reason: ' + status);
           }
         });
+      }
+      //Import city boundries geojson data
+      function cityboundries(){
+           map.data.loadGeoJson(hred = "lacityboundry.geojson");
+           map.data.setStyle(function(feature) {
+            var color = 'gray';
+            if (feature.getProperty('isColorful')) {
+                color = feature.getProperty('color');
+                }
+                return /** @type {!google.maps.Data.StyleOptions} */({
+                fillColor: color,
+                strokeColor: color,
+                strokeWeight: 1.2
+                  });
+                });
+
+            // When the user clicks, set 'isColorful', changing the color of the letters.
+          map.data.addListener('click', function(event) {
+              event.feature.setProperty('isColorful', true);
+            });
+            // When the user hovers, tempt them to click by outlining the letters.
+            // Call revertStyle() to remove all overrides. This will use the style rules
+            // defined in the function passed to setStyle()
+
+          map.data.addListener('mouseover', function(event) {
+              map.data.revertStyle();
+              map.data.overrideStyle(event.feature, {strokeWeight: 3.5});
+            });
+
+            map.data.addListener('mouseout', function(event) {
+            map.data.revertStyle();
+            });
 
       }
-
 
 
 
