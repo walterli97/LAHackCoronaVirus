@@ -15,45 +15,41 @@ As of 12pm 03/27
 
 class CoronavirusInfo:
     def __init__(self, url='http://publichealth.lacounty.gov/media/Coronavirus/locations.htm'):
-        #self.req = requests.get(url, timeout=30)
-        #self.soup = BeautifulSoup(self.req.text, 'lxml')
         self.req = urllib.request.urlopen(url).read().decode('utf-8', 'ignore')
         self.soup = BeautifulSoup(self.req, 'lxml')
         self.nameList = []
         self.valueList = []
 
-    def getTotalCases(self):
+    def getCovidInfo(self):
         tbody = self.soup.find('tbody')
         tr = tbody.find_all('tr')
         for i in range(len(tr)):
-            name = tr[i].find('th', {'scope': 'row'}).text.replace('-', '').replace('\xa0', ' ').strip()
+            #name = tr[i].find('th', {'scope': 'row'}).text.replace('-', '').replace('\xa0', ' ').strip()
+            name = tr[i].find('th', {'scope': 'row'}).text.replace('\xa0', ' ').strip()
             value = tr[i].find('td').text.strip()
             if name.startswith('-'):
-                name.replace('-', '').strip()
-                print(name)
+                name = name[2:]
             if value:
                 self.nameList.append(name)
                 self.valueList.append(value)
             elif not value and name:
                 self.nameList.append(name)
                 self.valueList.append(' ')
+
         with open('coronavirus.csv', 'w', encoding='utf-8', newline='') as f:
             writer = csv.writer(f)
             for i in range(len(self.nameList)):
-                #row = self.nameList[i] + self.valueList[i]
                 row = [self.nameList[i]] + [self.valueList[i]]
-                print(row)
                 writer.writerow(row)
 
-            #print(type(self.))
 
 if __name__ == '__main__':
     #flag = 0
     #now = datetime.datetime.now()
     #sched_timer = datetime.datetime(now.year, now.month, now.day, 0, 5, 0)
     a = CoronavirusInfo()
-    a.getTotalCases()
-    schedule.every().day.at("00:05").do(a.getTotalCases)
+    a.getCovidInfo()
+    schedule.every().day.at("00:05").do(a.getCovidInfo)
 
     while True:
         #now = datetime.datetime.now()
