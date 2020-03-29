@@ -6,7 +6,7 @@ It also gives recommendations based on infection and distance.
 
 # To run the project:
 
-### first run a simple http server
+### First run a simple http server
 
     python3 -m http.server
 
