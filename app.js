@@ -55,7 +55,7 @@ app.controller('MainCtrl', function($scope, $http) {
   stateLayer.addListener('click', function(e) {
     console.log(e);
     infoWindow.setContent('<div style="line-height:1.00;overflow:hidden;white-space:nowrap;">' +
-        e.feature.getProperty('name') + '<br> COLI: ' +
+        e.feature.getProperty('name') + '<br> COVID-19 confirmed: ' +
         e.feature.getProperty('COLI') + '</div>');
 
     var anchor = new google.maps.MVCObject();
