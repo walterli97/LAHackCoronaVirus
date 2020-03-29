@@ -4,20 +4,38 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <title>Places Search Box</title>
+    <link rel="stylesheet" type="text/css" href="./Semantic-UI-CSS-master/semantic.css">
     <style>
       #map {
         height: 100%;
       }
       html, body {
         height: 100%;
-        margin: 0;
-        padding: 0;
       }
+      
     </style>
   </head>
   <body>
 
-    <input id="pac-input" type="text" placeholder="Search Box">
+    <div style="height: 100%;" class="ui inverted vertical masthead center aligned segment">
+      <div class="ui text container">
+        <h1 class="ui inverted header">
+          Safe Shopping
+        </h1>
+        <h2>Safe shopping markets on the map</h2>
+        <div class="ui huge primary button"><a style="color: aliceblue;" href="#map">Get Started</a>></div>
+      </div>
+    </div>
+
+    <div class="ui search">
+      <div class="ui icon input center aligned">
+        <input class="prompt" id="pac-input" type="text" placeholder="Add address...">
+        <i class="search icon"></i>
+      </div>
+      <div class="results"></div>
+    </div>
+
+    <!-- <input id="pac-input" type="text" placeholder="Search Box"> -->
     <div id="output"></div>
     <div id="map"></div>
 
@@ -32,6 +50,8 @@
         // Create the search box and link it to the UI element.
         var input = document.getElementById('pac-input');
         var searchBox = new google.maps.places.SearchBox(input);
+        // map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
         // Bias the SearchBox results towards current map's viewport.
         map.addListener('bounds_changed', function() {
           searchBox.setBounds(map.getBounds());
