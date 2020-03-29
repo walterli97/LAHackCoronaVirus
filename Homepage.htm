@@ -115,8 +115,6 @@
       // Create the search box and link it to the UI element.
       var input = document.getElementById('pac-input');
       var searchBox = new google.maps.places.SearchBox(input);
-      // map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
-
       // Bias the SearchBox results towards current map's viewport.
       map.addListener('bounds_changed', function() {
         searchBox.setBounds(map.getBounds());
@@ -124,7 +122,9 @@
 
       var infoWindow = new google.maps.InfoWindow;
       var rows;
-      // Change this depending on the name of your PHP or XML file
+      /**
+       *  set the locations of markets
+       */
       downloadUrl('https://data.lacity.org/api/views/g986-7yf9/rows.xml?accessType=DOWNLOAD', function(data) {
         var xml = data.responseXML;
         rows = xml.getElementsByTagName("row");
@@ -161,6 +161,45 @@
           }   
         });
       });
+
+      /**
+       *  set the cities areas
+       */
+      infoWindow = new google.maps.InfoWindow({
+        content: ""
+      });
+      map.data.loadGeoJson('lacityboundry.geojson');
+      map.data.setStyle(function(feature) {
+        var color = 'gray';
+        if (feature.getProperty('isColorful')) {
+          color = feature.getProperty('color');
+        }
+        return /** @type {!google.maps.Data.StyleOptions} */({
+          fillColor: color,
+          strokeColor: color,
+          strokeWeight: 1.2,
+          fillOpacity:0.3,
+        });
+      });
+      // When the user clicks, set 'isColorful', changing the color of the letters.
+      map.data.addListener('click', function(event) {
+        map.data.overrideStyle(event.feature, {fillColor: '#3399FF',fillOpacity:0.3, strokeOpacity:0.7, strokeWeight: 3.5});
+        //show an infowindow on click
+        infoWindow.setContent('<div style="line-height:1.35;overflow:hidden;white-space:nowrap;"> City: '+
+                    event.feature.getProperty("city_label")  +"<br/>Novel Coronavirus Cases: " + event.feature.getProperty("value") + "</div>");
+        var anchor = new google.maps.MVCObject();
+        anchor.set("position",event.latLng);
+        infoWindow.open(map,anchor);
+      });
+
+      // When the user hovers, tempt them to click by outlining the letters.
+      // Call revertStyle() to remove all overrides. This will use the style rules
+      // defined in the function passed to setStyle()
+      map.data.addListener('mouseover', function(event) {
+          map.data.revertStyle();
+      });
+
+
       var markers = [];
       // Listen for the event fired when the user selects a prediction and retrieve
       // more details for that place.
