@@ -1,74 +1,89 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-    <meta charset="utf-8">
-    <style>
-      /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
-      #map {
-        height: 100%;
+<head>
+  <meta charset="utf-8" />
+  <title>AngularJS Plunker</title>
+  <style>
+    #map-canvas {
+      height: 100%;
+    }
+    /* Optional: Makes the sample page fill the window. */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+  <script>
+    function initAutocomplete() {
+      var map = new google.maps.Map(document.getElementById('map-canvas'), {
+        center: {lat: 34.0522, lng: -118.2437},
+        zoom: 11,
+        mapTypeId: 'roadmap'
+      });
+
+      // Set a blank infoWindow to be used for each to state on click
+      var infoWindow = new google.maps.InfoWindow({
+        content: ""
+      });
+      // Create the state data layer and load the GeoJson Data
+      var stateLayer = new google.maps.Data();
+      stateLayer.loadGeoJson('Neighborhoods.geojson');
+      stateLayer.setStyle(function(feature) {
+        return {
+          fillColor: getColor(feature.getProperty('COLI')), // call function to get color for state based on the COLI (Cost of Living Index)
+          fillOpacity: 0.8,
+          strokeColor: '#b3b3b3',
+          strokeWeight: 1,
+          zIndex: 1
+        };
+      });
+      // Add mouseover and mouse out styling for the GeoJSON State data
+      stateLayer.addListener('mouseover', function(e) {
+        stateLayer.overrideStyle(e.feature, {
+          strokeColor: '#2a2a2a',
+          strokeWeight: 2,
+          zIndex: 2
+        });
+      });
+      stateLayer.addListener('mouseout', function(e) {
+        stateLayer.revertStyle();
+      });
+      // Adds an info window on click with in a state that includes the state name and COLI
+      stateLayer.addListener('click', function(e) {
+        console.log(e);
+        infoWindow.setContent('<div style="line-height:1.00;overflow:hidden;white-space:nowrap;">' +
+            e.feature.getProperty('name') + '<br> infected: ' +
+            e.feature.getProperty('COLI') + '</div>');
+        var anchor = new google.maps.MVCObject();
+        anchor.set("position", e.latLng);
+        infoWindow.open(map, anchor);
+      });
+      // Final step here sets the stateLayer GeoJSON data onto the map
+      stateLayer.setMap(map);
+
+      // returns a color based on the value given when the function is called
+      function getColor(coli) {
+        var colors = [
+          '#d1ccad',
+          '#89a844',
+          '#FFD700',
+          '#FF8C00',
+          '#DC143C'
+        ];
+        return coli >= 15 ? colors[4] :
+            coli > 10 ? colors[3] :
+                coli > 5 ? colors[2] :
+                    coli > 0 ? colors[1] :
+                        colors[0];
       }
-      /* Optional: Makes the sample page fill the window. */
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="map"></div>
-    <script>
-      var map;
-      function initMap() {
-        map = new google.maps.Map(document.getElementById('map'), {
-          center: {lat: 34.0522, lng: -118.2437},
-          zoom: 11,
-          mapTypeId: 'roadmap'
-        });
+    }
+  </script>
+</head>
 
-        var infoWindow = new google.maps.InfoWindow({
-		      content: ""
-		  	});
-        map.data.loadGeoJson('lacityboundry.geojson');
-        map.data.setStyle(function(feature) {
-          var color = 'gray';
-          if (feature.getProperty('isColorful')) {
-            color = feature.getProperty('color');
-          }
-          return /** @type {!google.maps.Data.StyleOptions} */({
-            fillColor: color,
-            strokeColor: color,
-            strokeWeight: 1.2,
-            fillOpacity:0.3,
-          });
-        });
-        // When the user clicks, set 'isColorful', changing the color of the letters.
-        map.data.addListener('click', function(event) {
-          map.data.overrideStyle(event.feature, {fillColor: '#3399FF',fillOpacity:0.3, strokeOpacity:0.7, strokeWeight: 3.5});
-          //show an infowindow on click
-				  infoWindow.setContent('<div style="line-height:1.35;overflow:hidden;white-space:nowrap;"> City: '+
-											event.feature.getProperty("city_label")  +"<br/>Novel Coronavirus Cases: " + event.feature.getProperty("value") + "</div>");
-				  var anchor = new google.maps.MVCObject();
-				  anchor.set("position",event.latLng);
-				  infoWindow.open(map,anchor);
-        });
-
-        // When the user hovers, tempt them to click by outlining the letters.
-        // Call revertStyle() to remove all overrides. This will use the style rules
-        // defined in the function passed to setStyle()
-        map.data.addListener('mousedown', function(event) {
-            map.data.revertStyle();
-        });
-      }
-
-    </script>
-    <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDet-rQNX5noBLzcyeLf-FK0mT9cVYOPCo&callback=initMap">
-    </script>
-  </body>
-
-
-
+<body ng-controller="MainCtrl">
+<div id="map-canvas"></div>
+</body>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBeiLe_l1SjazmA39AIBp_hSJHdPQqkH7g&libraries=places&callback=initAutocomplete"
+async defer></script>
 </html>
