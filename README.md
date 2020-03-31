@@ -10,7 +10,7 @@ It also gives recommendations based on infection and distance.
 
     python3 -m http.server
 
-### then type the following address into your brower
+### then type the port number shown on your python server and the following address into your brower
 
     localhost:8000/Homepage.htm
 
