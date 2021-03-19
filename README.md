@@ -1,3 +1,4 @@
+![14121616141392_ pic_hd](https://user-images.githubusercontent.com/55896677/111750002-d73fab00-884f-11eb-98ff-b87a635cf06a.jpg)
 # Covid-Safe Shopping is a 2020 LA Hackathon contest project
 ### Team members: @Rickyoung221, @terranzmczmx, @annyzy, @walterli97, @Zeyu Wang
 
